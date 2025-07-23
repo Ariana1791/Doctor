@@ -1,7 +1,5 @@
 package com.mx.doctor.service;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,10 +25,10 @@ public class DoctorServiceImpl implements DoctorInterfaceService {
     }
 
     @Override
-    public List<Doctor> buscarDoctor() {
-        List<Doctor> resultado = null;
+    public Doctor buscarDoctor(Doctor doctor) {
+        Doctor resultado = null;
         try {
-            resultado = repository.findAll();
+            resultado = repository.findByNumeroDeCedula(doctor.getNumeroDeCedula());
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -72,4 +70,30 @@ public class DoctorServiceImpl implements DoctorInterfaceService {
         }
 
     }
+
+    @Override
+    public Doctor  buscarNumeroDeCedula(int numeroDeCedula) {
+        Doctor recuperado = null;
+        try{
+          recuperado = repository.findByNumeroDeCedula(numeroDeCedula);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return  recuperado;
 }
+
+@Override 
+    public boolean buscarPorId(int id){
+            boolean recuperado = false; 
+        try {
+         recuperado = repository.existsById(id);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return  recuperado;
+}
+
+
+
+}
+

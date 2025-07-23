@@ -1,14 +1,18 @@
 package com.mx.doctor.controller;
 
-import java.util.List;
+
+import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mx.doctor.model.Doctor;
@@ -16,57 +20,56 @@ import com.mx.doctor.service.DoctorInterfaceService;
 
 
 @RestController
+@CrossOrigin(origins = "*", methods= {RequestMethod.GET,RequestMethod.POST})
 public class DoctorController {
 
     @Autowired
     DoctorInterfaceService service;
 
     @PostMapping(value ="/crearDoctor")
-    public Doctor crearDoctor(@RequestBody Doctor doctor) {
-       Doctor crear = null;
-         try {
-            crear = service.crearDoctor(doctor);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-
+    public ResponseEntity <?> crearDoctor(@RequestBody Doctor doctor) {
+       Doctor recuperado = service.buscarNumeroDeCedula(doctor.getNumeroDeCedula());
+         if(recuperado == null){
+            service.crearDoctor(doctor);
+                return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("exito","el doctor se a guardado correctamente"));
         }
-        
-        return crear;
+                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error","el doctor ya se encuentra registrado"));
     }
-    
 
-    @GetMapping(value = "/buscarDoctor")
-    public List <Doctor> buscarDoctor() {
-       List <Doctor> buscar = null;
-        try {
-            buscar = service.buscarDoctor();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+    @PostMapping(value = "/buscarDoctor")
+    public ResponseEntity<?> buscarDoctor(@RequestBody Doctor doctor) {
+        Doctor buscar = service.buscarNumeroDeCedula(doctor.getNumeroDeCedula());
+        if(buscar != null){
+            return ResponseEntity.status(HttpStatus.OK).body(buscar);
         }
-        return buscar;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error","servicio no encontrado"));
+       
     }
 
 
     @PutMapping(value = "/actualizarDoctor/{idDoctor}")
-    public Doctor actualizarDoctor(@RequestBody Doctor doctor, @PathVariable int idDoctor) {
-        Doctor actualizar = null;
-        try {
-            actualizar = service.actualizarDoctor(doctor, idDoctor);
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+    public ResponseEntity<?> actualizarDoctor(@RequestBody Doctor doctor, @PathVariable int idDoctor) {
+        boolean recuperado = service.buscarPorId(idDoctor);
+        if(recuperado == true){
+            service.actualizarDoctor(doctor, idDoctor);
+        return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("exito","el Doctor se a actualizado correctamente"));
         }
-        return actualizar;
-    }
+         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error","idDoctor no encontrado"));
+        
+    }   
+       
 
 
     @DeleteMapping(value = "/eliminarDoctor/{idDoctor}")
-    public void eliminarDoctor(@PathVariable int idDoctor) {
-
-        try {
+    public ResponseEntity<?> eliminarDoctor(@PathVariable int idDoctor) {
+        boolean recuperado = service.buscarPorId(idDoctor);
+        if(recuperado == true){
             service.eliminarDoctor(idDoctor);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+         return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("exito","el idDoctor se a eliminado correctamente"));
         }
+         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error","Id no encontrado"));
     }
-}
+    
+
+
+}    
